@@ -8,7 +8,7 @@ import threading
 import time
 import Queue
 
-# 简化进程控制块，只包含寄存器、pc、进程号、代码，其他的不考虑
+# 简化进程控制块，只包含寄存器、pc、进程号、代码、优先级，其他的不考虑
 # 这是空闲进程，如果当前没有可执行进程的话，调度空闲进程运行，用于填充cpu
 idle = {'pid':0, 
         'pc':0,
@@ -17,6 +17,7 @@ idle = {'pid':0,
         'rc':'idle',
         'rd':'idle',
         'code':['idle']*100,
+        'pri':-1,
         }
 
 class RAM(object):
@@ -41,6 +42,7 @@ class RAM(object):
 
         # 调度算法数据结构
         self.rr_queue = Queue.Queue()
+        self.fb_queues = [Queue.Queue() for i in range(100)]
 
     # 恩，为了方便提供读取进程控制块中相应进程的下一条指令
     def getcode(self, pid, pc):
@@ -72,11 +74,14 @@ class RAM(object):
                             'rb':0,
                             'rc':0,
                             'rd':0,
-                            'code':code
+                            'code':code,
+                            'pri':0,
                             })
 
                         # 一有新进程就加进轮转队列
                         self.rr_queue.put(pid)
+                        # 一有新进程就加进反馈0队列
+                        self.fb_queues[0].put(pid)
 
                         self.pcblock.release()
                         # IO中断，通知内核有新进程加入，中断编号为3
