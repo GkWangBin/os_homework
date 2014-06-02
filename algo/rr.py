@@ -9,6 +9,7 @@ import cpu
 import ram
 
 # 临时变量
+# 因为没用到优先级，所以无视之
 pid = None
 pc = None
 ra = None
