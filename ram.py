@@ -6,6 +6,7 @@ import os
 import re
 import threading
 import time
+import Queue
 
 # 简化进程控制块，只包含寄存器、pc、进程号、代码，其他的不考虑
 # 这是空闲进程，如果当前没有可执行进程的话，调度空闲进程运行，用于填充cpu
@@ -37,6 +38,9 @@ class RAM(object):
         # 其实将新进程远程调度进ram不应该让ram管，但为了方便
         # 就只能先这样了
         self._oldpro = {}
+
+        # 调度算法数据结构
+        self.rr_queue = Queue.Queue()
 
     # 恩，为了方便提供读取进程控制块中相应进程的下一条指令
     def getcode(self, pid, pc):
@@ -71,9 +75,8 @@ class RAM(object):
                             'code':code
                             })
 
-                        # 此处根据算法建立的数据结构来加入进程
-                        if hasattr(self, 'rr_queue'):
-                            ram.ram.rr_queue.put(pid)
+                        # 一有新进程就加进轮转队列
+                        self.rr_queue.put(pid)
 
                         self.pcblock.release()
                         # IO中断，通知内核有新进程加入，中断编号为3
