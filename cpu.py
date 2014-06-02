@@ -39,18 +39,20 @@ class CPU(object):
     # 为了方便，cpu提供接口快速装载进程信息
     # quickrec的意思大概就是...快速恢复上下文
     def quickrec(self, pid=0, pc=0, ra=0, rb=0, rc=0, rd=0):
+        self.pid = pid
+        self.pc = pc
         self.ra = ra
         self.rb = rb
         self.rc = rc
         self.rd = rd
-        self.pid = pid
-        self.pc = pc
 
     # cpu分片与程序正常结束时中断逻辑
     def work(self):
         while True:
             # 如果当前模式有时钟中断并且时间片用完
-            if self.SLICE_TIME is not None and self.time == self.SLICE_TIME:
+            # 如果是idle进程，不切换，因为频繁切换idle
+            # 会浪费资源；如果是用户进程，就发生中断
+            if self.SLICE_TIME is not None and self.time == self.SLICE_TIME and self.pid != 0:
                 # 先保存当前进程的所有cpu状态到内存中的缓存区域
                 # 保存的这些信息交给内核处理，cpu只负责保存
                 # 之所以要先缓存上下文，是因为内核处理中断可能很快
@@ -132,6 +134,8 @@ class CPU(object):
 
             # 采用中断将控制交还给操作系统
             self.interrupt(0)
+            # 计时器重设
+            self.time = 0
             time.sleep(TIME_PER_SCH)
 
         # 模拟当前代码修改寄存器的功能
