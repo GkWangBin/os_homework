@@ -29,6 +29,7 @@ class CPU(object):
         self.pid = 0
         self.pc = 0
         self.curcode = ' '
+        self.pri = -1
         # cpu时钟，用于分片的计时
         self.time = 0
 
@@ -38,13 +39,14 @@ class CPU(object):
 
     # 为了方便，cpu提供接口快速装载进程信息
     # quickrec的意思大概就是...快速恢复上下文
-    def quickrec(self, pid=0, pc=0, ra=0, rb=0, rc=0, rd=0):
+    def quickrec(self, pid=0, pc=0, ra=0, rb=0, rc=0, rd=0, pri = -1):
         self.pid = pid
         self.pc = pc
         self.ra = ra
         self.rb = rb
         self.rc = rc
         self.rd = rd
+        self.pri = pri
 
     # cpu分片与程序正常结束时中断逻辑
     def work(self):
@@ -66,6 +68,7 @@ class CPU(object):
                         'rc':self.rc,
                         'rd':self.rd,
                         'curcode':self.curcode,
+                        'pri':self.pri,
                     }
                 )
                 # 计时器重设
@@ -80,6 +83,8 @@ class CPU(object):
                 self.rc = '...'
                 self.rd = '...'
                 self.curcode = 'kernel_schedule_operation'
+                self.pri = -1
+
                 # 为了打印os调度程序的运行效果，故意设置(0.5-TIME_PER_SCH)秒的打印时间
                 time.sleep(0.5-TIME_PER_SCH);
                 # 发出时钟中断，设置中断标志后，调度程序真正的运行
@@ -119,6 +124,7 @@ class CPU(object):
                     'rc':self.rc,
                     'rd':self.rd,
                     'curcode':self.curcode,
+                    'pri':self.pri,
                 }
             )
             time.sleep(TIME_PER_INS)
@@ -130,6 +136,7 @@ class CPU(object):
             self.rc = '...'
             self.rd = '...'
             self.curcode = 'kernel_schedule_operation'
+            self.pri = -1
             time.sleep(0.5-TIME_PER_SCH)
 
             # 采用中断将控制交还给操作系统
