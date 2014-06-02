@@ -15,17 +15,17 @@ python start.py algoname slicetime
 
 1. 先来先服务
 
-```{sh}
-python start.py fcfs
-```
+    ```{sh}
+    python start.py fcfs
+    ```
 
-![img](https://github.com/panhzh3/os_homework/raw/master/pic/fcfs.png)
+    ![img](https://github.com/panhzh3/os_homework/raw/master/pic/fcfs.png)
 
 2. 轮转
 
-```{sh}
-python start.py rr 3
-```
+    ```{sh}
+    python start.py rr 3
+    ```
 
-![img](https://github.com/panhzh3/os_homework/raw/master/pic/rr-3.png)
+    ![img](https://github.com/panhzh3/os_homework/raw/master/pic/rr-3.png)
 
