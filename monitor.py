@@ -43,6 +43,7 @@ color = [
             '\x1B[1;34m%s\x1B[0m',
             '\x1B[1;35m%s\x1B[0m',
             '\x1B[1;36m%s\x1B[0m',
+            '\x1B[1;33;41m%s\x1B[0m',
         ]
 
 col = 150
@@ -61,10 +62,14 @@ class MONITOR(object):
             self.mov()
             self.fresh()
             self.print_tb()
-            print('')
+            print()
             self.print_cpu()
-            print('')
+            print()
             self.print_t()
+            # 打印中断标志和计时器用于debug，不用就注释掉
+            # print()
+            # self.print_inter()
+            # self.print_timer()
             time.sleep(FREQ)
 
     def mov(self):
@@ -125,7 +130,11 @@ class MONITOR(object):
             servedtime = endtime-begtime if (begtime!='-' and endtime!='-') else '-'
             ans = servedtime/exectime if (exectime!='-' and servedtime!='-') else '-'
             print('  %10s%25s%25s%20s%20s%20s' % (color[i+1] % ('pro'+str(i+1)), begtime, endtime, exectime, servedtime, ans))
+    def print_inter(self):
+        print(color[7] % ('interrupt flag: '+str(ram.ram.inter))) 
 
+    def print_timer(self):
+        print(color[7] % ('timer: '+str(cpu.cpu.time)))
     # 初始化表格
     def init_monitb(self):
         for i in range(row):
