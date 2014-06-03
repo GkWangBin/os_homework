@@ -98,13 +98,21 @@ class CPU(object):
             # 如果没有启用时间片或者时间片还没完
             else:
                 # 那么就继续运行当前的进程，到内存中读取进程控制块中代码区的下一行代码
-                ram.pcblock.acquire()
-                self.curcode = ram.getcode(self.pid, self.pc)
-                ram.pcblock.release()
-                # pc++
-                self.pc += 1
-                self.time += 1
-                self.excute(self.curcode)
+                # 这里比较猥琐，因为一开始没有设计好IO中断的处理方式
+                # IO中断在抢夺式调度时，会导致控制权交给cpu
+                # 而因为是模拟，导致并行，所以要特判一下，如果cpu的pid
+                # 是-1,说明现在其实已经是系统运行中，所以不执行系统的
+                # 虚构代码，否则引发异常
+                if self.pid != -1:
+                    ram.pcblock.acquire()
+                    self.curcode = ram.getcode(self.pid, self.pc)
+                    ram.pcblock.release()
+                    # pc++
+                    self.pc += 1
+                    self.time += 1
+                    self.excute(self.curcode)
+                else:
+                    self.excute(self.curcode)
 
     # 运行指令
     def excute(self, curcode):
