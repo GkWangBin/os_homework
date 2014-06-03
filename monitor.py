@@ -80,10 +80,10 @@ class MONITOR(object):
 
     def fresh(self):
         pidn = cpu.cpu.pid
-        if pidn < 1:
-            ram.ram.monitable[0][col-1] = color[0] % '|'
-        else:
+        if pidn > 0:
             ram.ram.monitable[pidn][col-1] = color[pidn] % '|'
+        else:
+            ram.ram.monitable[0][col-1] = color[0] % '|'
         # 结束的进程
         if pidn < 1:
             for i in range(6):
