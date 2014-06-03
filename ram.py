@@ -43,6 +43,8 @@ class RAM(object):
         # 调度算法数据结构
         self.rr_queue = Queue.Queue()
         self.fb_queues = [Queue.Queue() for i in range(100)]
+        self.spn_queue = Queue.PriorityQueue()
+        self.srt_queue = Queue.PriorityQueue()
 
     # 恩，为了方便提供读取进程控制块中相应进程的下一条指令
     def getcode(self, pid, pc):
@@ -55,10 +57,13 @@ class RAM(object):
     def searchpro(self):
         pro = re.compile('^pro([0-9]+)$')
         while True:
+            proc = False
             files = sorted(os.listdir('./pro/'))
+            self.pcblock.acquire()
             for f in files:
                 if f[0:3] == 'pro':
                     if f not in self._oldpro.keys():
+                        proc = True
                         # 进程一经过远程调度就记录开始时间
                         # 结束时间在exit调用时记录
                         self._oldpro[f] = {'begtime':time.time(),}
@@ -66,7 +71,6 @@ class RAM(object):
                         code = [ins.rstrip() for ins in open('./pro/'+f,'r')]
                         # 进程的服务时间是一定的，由指令数决定，1 s/ins
                         self._oldpro[f]['exectime'] = len(code)
-                        self.pcblock.acquire()
                         self.pcb.append({
                             'pid':pid,
                             'pc':0,
@@ -82,14 +86,19 @@ class RAM(object):
                         self.rr_queue.put(pid)
                         # 一有新进程就加进反馈0队列
                         self.fb_queues[0].put(pid)
+                        # 一有新进程就加进spn优先队列（heap）
+                        self.spn_queue.put((self._oldpro['pro'+str(pid)]['exectime'], pid))
+                        # 一有新进程就加进srt优先队列（heap）
+                        self.srt_queue.put((self._oldpro['pro'+str(pid)]['exectime'], pid))
 
-                        self.pcblock.release()
-                        # IO中断，通知内核有新进程加入，中断编号为3
-                        self.interlock.acquire()
-                        self.inter = 3
-                        self.interlock.release()
                     else:
                         pass
+            self.pcblock.release()
+            # IO中断，通知内核有新进程加入，中断编号为3
+            if proc:
+                self.interlock.acquire()
+                self.inter = 3
+                self.interlock.release()
             # 设置0.1秒扫描一次目录，太频繁不好...
             time.sleep(0.1)
 
