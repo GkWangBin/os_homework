@@ -86,16 +86,28 @@ def schedule(intermsg):
     # 最后，出队，恢复pcb中的信息到cpu中
     
     elif intermsg == 3:
-        if cpu.cpu.pid == 0:
+        pid = cpu.cpu.pid
+        if pid == 0:
             pass
         else:
-            pid = cpu.cpu.pid
             pc = cpu.cpu.pc
             ra = cpu.cpu.ra
             rb = cpu.cpu.rb
             rc = cpu.cpu.rc
             rd = cpu.cpu.rd
             
+        # 模拟显示系统调度进程
+        # 时间还是设置为 TIME_PER_SCH
+        cpu.cpu.pid = -1
+        cpu.cpu.pc = '...'
+        cpu.cpu.ra = '...'
+        cpu.cpu.rb = '...'
+        cpu.cpu.rc = '...'
+        cpu.cpu.rd = '...'
+        cpu.cpu.curcode = 'kernel_schedule_operation'
+        cpu.cpu.pri = -1
+
+        if pid != 0:
             ram.ram.pcblock.acquire()
             for pro in ram.ram.pcb:
                 if pro['pid'] == pid:
@@ -110,16 +122,6 @@ def schedule(intermsg):
             ram.ram.srt_queue.put((lefttime, pid))
             ram.ram.pcblock.release()
 
-        # 模拟显示系统调度进程
-        # 时间还是设置为 TIME_PER_SCH
-        cpu.cpu.pid = -1
-        cpu.cpu.pc = '...'
-        cpu.cpu.ra = '...'
-        cpu.cpu.rb = '...'
-        cpu.cpu.rc = '...'
-        cpu.cpu.rd = '...'
-        cpu.cpu.curcode = 'kernel_schedule_operation'
-        cpu.cpu.pri = -1
         time.sleep(cpu.TIME_PER_SCH)
 
         pid = ram.ram.srt_queue.get_nowait()[1]
