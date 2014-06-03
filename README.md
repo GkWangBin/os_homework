@@ -42,7 +42,6 @@ python start.py algoname slicetime
 4. 最短进程优先
     ```{sh}
     python start.py spn
-
     ```
 
     ![img](https://github.com/panhzh3/os_homework/raw/master/pic/spn.png)
@@ -51,7 +50,6 @@ python start.py algoname slicetime
 5. 最短剩余优先
     ```{sh}
     python start.py srt
-
     ```
 
     ![img](https://github.com/panhzh3/os_homework/raw/master/pic/srt.png)
