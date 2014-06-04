@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import os
 import sys
@@ -30,6 +30,5 @@ def main():
     kernel.kernel.setsche(algo)
     kernel.kernel.run()
     
-
 if __name__ == '__main__':
     main()
