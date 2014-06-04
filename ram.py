@@ -46,6 +46,11 @@ class RAM(object):
         self.spn_queue = Queue.PriorityQueue()
         self.srt_queue = Queue.PriorityQueue()
 
+        # 由于使用数组，所以防止IO中断与exit系统中断竞争
+        # 增加互斥锁
+        self.hrrnlock = threading.Lock()
+        self.hrrn_queue = []
+
     # 恩，为了方便提供读取进程控制块中相应进程的下一条指令
     def getcode(self, pid, pc):
         for pro in self.pcb:
@@ -90,6 +95,10 @@ class RAM(object):
                         self.spn_queue.put((self._oldpro['pro'+str(pid)]['exectime'], pid))
                         # 一有新进程就加进srt优先队列（heap）
                         self.srt_queue.put((self._oldpro['pro'+str(pid)]['exectime'], pid))
+                        # 一有新进程就加进hrrn数组，初始等待cpu时间为0
+                        self.hrrnlock.acquire()
+                        self.hrrn_queue.append([1, self._oldpro['pro'+str(pid)]['begtime'], self._oldpro['pro'+str(pid)]['exectime'], pid]) #(w+s)/s
+                        self.hrrnlock.release()
 
                     else:
                         pass
