@@ -119,12 +119,12 @@ def schedule(intermsg):
                     pro['rd'] = rd
                     break
             lefttime = ram.ram._oldpro['pro'+str(pid)]['exectime'] - pc
-            # 恩将新进程出队
             ram.ram.srt_queue.put((lefttime, pid))
             ram.ram.pcblock.release()
 
-        time.sleep(cpu.TIME_PER_SCH)
+        time.sleep(0.5)
 
+        # 恩将新进程出队
         pid = ram.ram.srt_queue.get_nowait()[1]
         ram.ram.pcblock.acquire()
         for pro in ram.ram.pcb:
