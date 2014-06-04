@@ -50,6 +50,7 @@ def schedule(intermsg):
             for i in range(size):
                 if ram.ram.pcb[i]['pid'] == curpropid:
                     index = i
+                    break
             if index is not None:
                 ram.ram.deadpro.append(curpropid)
                 del ram.ram.pcb[index]
