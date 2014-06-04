@@ -3,8 +3,6 @@
 
 import time
 
-from Queue import Queue
-
 import cpu
 import ram
 
@@ -95,6 +93,8 @@ def schedule(intermsg):
     elif intermsg == 3:
         if cpu.cpu.pid == 0:
             # 恩将最高最高响应比进程出队
+            # 同时加进来的多个新进程的响应比相同R = 1
+            # 所以实际上不作特别处理，直接取最后一个就行
             ram.ram.hrrnlock.acquire()
             pid = ram.ram.hrrn_queue[-1][3]
             del ram.ram.hrrn_queue[-1]
@@ -111,5 +111,4 @@ def schedule(intermsg):
     # 调度完后，把中断信息还原为None，释放锁
     ram.ram.inter = None
     ram.ram.interlock.release()
-
 
