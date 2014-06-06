@@ -87,59 +87,65 @@ def schedule(intermsg):
     # 最后，出队，恢复pcb中的信息到cpu中
     
     elif intermsg == 3:
+        b = True 
         pid = cpu.cpu.pid
-        if pid == 0:
-            pass
-        else:
-            pc = cpu.cpu.pc
-            ra = cpu.cpu.ra
-            rb = cpu.cpu.rb
-            rc = cpu.cpu.rc
-            rd = cpu.cpu.rd
-            
-        # 模拟显示系统调度进程
-        # 时间还是设置为 TIME_PER_SCH
-        cpu.cpu.pid = -1
-        cpu.cpu.pc = '...'
-        cpu.cpu.ra = '...'
-        cpu.cpu.rb = '...'
-        cpu.cpu.rc = '...'
-        cpu.cpu.rd = '...'
-        cpu.cpu.curcode = 'kernel_schedule_operation'
-        cpu.cpu.pri = -1
+        if pid == -1:
+            b = False 
+        if b:
+            if pid == 0:
+                pass
+            else:
+                pc = cpu.cpu.pc
+                ra = cpu.cpu.ra
+                rb = cpu.cpu.rb
+                rc = cpu.cpu.rc
+                rd = cpu.cpu.rd
+                
+            # 模拟显示系统调度进程
+            # 时间还是设置为 TIME_PER_SCH
+            cpu.cpu.pid = -1
+            cpu.cpu.pc = '...'
+            cpu.cpu.ra = '...'
+            cpu.cpu.rb = '...'
+            cpu.cpu.rc = '...'
+            cpu.cpu.rd = '...'
+            cpu.cpu.curcode = 'kernel_schedule_operation'
+            cpu.cpu.pri = -1
 
-        if pid != 0:
+            if pid != 0:
+                ram.ram.pcblock.acquire()
+                for pro in ram.ram.pcb:
+                    if pro['pid'] == pid:
+                        pro['pc'] = pc
+                        pro['ra'] = ra
+                        pro['rb'] = rb
+                        pro['rc'] = rc
+                        pro['rd'] = rd
+                        break
+                lefttime = ram.ram._oldpro['pro'+str(pid)]['exectime'] - pc + 1
+                ram.ram.srt_queue.put((lefttime, pid))
+                ram.ram.pcblock.release()
+
+            time.sleep(0.5)
+
+            # 恩将新进程出队
+            pid = ram.ram.srt_queue.get_nowait()[1]
             ram.ram.pcblock.acquire()
             for pro in ram.ram.pcb:
                 if pro['pid'] == pid:
-                    pro['pc'] = pc
-                    pro['ra'] = ra
-                    pro['rb'] = rb
-                    pro['rc'] = rc
-                    pro['rd'] = rd
+                    pc = pro['pc']
+                    ra = pro['ra']
+                    rb = pro['rb']
+                    rc = pro['rc']
+                    rd = pro['rd']
                     break
-            lefttime = ram.ram._oldpro['pro'+str(pid)]['exectime'] - pc + 1
-            ram.ram.srt_queue.put((lefttime, pid))
             ram.ram.pcblock.release()
-
-        time.sleep(0.5)
-
-        # 恩将新进程出队
-        pid = ram.ram.srt_queue.get_nowait()[1]
-        ram.ram.pcblock.acquire()
-        for pro in ram.ram.pcb:
-            if pro['pid'] == pid:
-                pc = pro['pc']
-                ra = pro['ra']
-                rb = pro['rb']
-                rc = pro['rc']
-                rd = pro['rd']
-                break
-        ram.ram.pcblock.release()
-        # 注意如果IO中断导致进程切换
-        # 则必须重设计时器
-        # cpu.cpu.time = 0
-        cpu.cpu.quickrec(pid, pc, ra, rb, rc, rd, 0)
+            # 注意如果IO中断导致进程切换
+            # 则必须重设计时器
+            # cpu.cpu.time = 0
+            cpu.cpu.quickrec(pid, pc, ra, rb, rc, rd, 0)
+        else:
+            pass
 
     # 调度完后，把中断信息还原为None，释放锁
     ram.ram.inter = None
