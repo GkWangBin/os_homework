@@ -96,6 +96,7 @@ def schedule(intermsg):
         ram.ram.curpro = []
         if curpro['pid'] > 0:
             ram.ram.pcblock.acquire()
+            qnum = -1
             for pro in ram.ram.pcb:
                 if pro['pid'] == curpro['pid']:
                     pro['pc'] = curpro['pc']
@@ -103,10 +104,13 @@ def schedule(intermsg):
                     pro['rb'] = curpro['rb']
                     pro['rc'] = curpro['rc']
                     pro['rd'] = curpro['rd']
-                    pro['pri'] = curpro['pri']+1
+                    # 只有100个优先级
+                    if curpro['pri']+1 < 100:
+                        pro['pri'] = curpro['pri']+1
+                    qnum = pro['pri']
                     break
             ram.ram.pcblock.release()
-            ram.ram.fb_queues[curpro['pri']+1].put(curpro['pid'])
+            ram.ram.fb_queues[qnum].put(curpro['pid'])
             for queue in ram.ram.fb_queues:
                 if not queue.empty():
                     pid = queue.get_nowait()
