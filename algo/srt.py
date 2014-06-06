@@ -118,7 +118,7 @@ def schedule(intermsg):
                     pro['rc'] = rc
                     pro['rd'] = rd
                     break
-            lefttime = ram.ram._oldpro['pro'+str(pid)]['exectime'] - pc
+            lefttime = ram.ram._oldpro['pro'+str(pid)]['exectime'] - pc + 1
             ram.ram.srt_queue.put((lefttime, pid))
             ram.ram.pcblock.release()
 
