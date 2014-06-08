@@ -4,6 +4,8 @@ os_homework
 1. 基本的框架已经搭好，目前只要写调度算法
 2. 目前完成了`fcfs`,`rr`,`fb`,`spn`,`srt`,`hrrn`
 3. 运行方法：
+4. 加入`run`shell script展示效果，`./run
+5. 算法分析文档在pre中。等待PPT制作
 
 ```{sh}
 ./start algoname slicetime 
