@@ -33,7 +33,7 @@ read Keypress
 		cp ./show/pro$i ./pro
 		sleep 2.00
 	done
-	sleep 20.00
+	sleep 15.00
 	kill %1
 
 done
